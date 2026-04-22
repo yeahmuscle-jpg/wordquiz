@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WordQuiz — 英単語クイズ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a22;
+      --card: #22222d;
+      --border: #2e2e3e;
+      --accent: #f5c842;
+      --accent2: #e87040;
+      --text: #f0ede8;
+      --muted: #7a7a90;
+      --correct: #4caf7d;
+      --wrong: #e05555;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 64px;
+    }
+
+    /* noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 560px; }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 40px; }
+    header .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.6rem;
+      letter-spacing: -1px;
+      color: var(--accent);
+    }
+    header .logo span { color: var(--accent2); }
+    header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+
+    /* ── Progress bar ── */
+    .progress-wrap { margin-bottom: 24px; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+    .progress-track {
+      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px; transition: width 0.5s ease;
+    }
+
+    /* ── Score badge ── */
+    .score-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 99px; padding: 6px 16px;
+      font-size: 0.85rem; color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .score-badge strong { color: var(--accent); font-size: 1rem; }
+
+    /* ── Question card ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 40px 32px 32px;
+      margin-bottom: 20px;
+      animation: slideIn 0.35s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes slideIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+    .question-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 16px; }
+    .question-word {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem; color: var(--text);
+      line-height: 1.1; margin-bottom: 12px;
+    }
+    .question-hint { font-size: 0.85rem; color: var(--muted); margin-bottom: 0; }
+
+    /* ── Options grid ── */
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .option-btn {
+      background: var(--surface); border: 1.5px solid var(--border);
+      color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; padding: 18px 16px; border-radius: 12px;
+      cursor: pointer; text-align: center; line-height: 1.4;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--accent); background: #2a2a36; transform: translateY(-2px);
+    }
+    .option-btn.correct {
+      border-color: var(--correct); background: #1a3029; color: var(--correct);
+    }
+    .option-btn.wrong {
+      border-color: var(--wrong); background: #2e1a1a; color: var(--wrong);
+    }
+    .option-btn:disabled { cursor: default; }
+
+    /* ── Feedback ── */
+    .feedback {
+      border-radius: var(--radius); padding: 16px 20px;
+      font-size: 0.9rem; margin-bottom: 20px;
+      display: none; animation: slideIn 0.25s ease;
+    }
+    .feedback.show { display: block; }
+    .feedback.correct-fb { background: #1a3029; border: 1px solid var(--correct); color: var(--correct); }
+    .feedback.wrong-fb  { background: #2e1a1a; border: 1px solid var(--wrong);  color: var(--wrong); }
+    .feedback strong { display: block; margin-bottom: 4px; font-size: 1rem; }
+    .feedback span { color: var(--muted); font-size: 0.85rem; }
+
+    /* ── Next button ── */
+    .btn-next {
+      width: 100%; padding: 18px; border-radius: var(--radius);
+      background: var(--accent); color: #0f0f13;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+      border: none; cursor: pointer; display: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-next.show { display: block; animation: slideIn 0.25s ease; }
+    .btn-next:hover { background: #f7d060; transform: translateY(-2px); }
+
+    /* ── Result screen ── */
+    #result-screen {
+      display: none; text-align: center;
+      animation: slideIn 0.4s cubic-bezier(.22,1,.36,1);
+    }
+    #result-screen.show { display: block; }
+    .result-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 48px 32px;
+    }
+    .result-emoji { font-size: 4rem; margin-bottom: 16px; }
+    .result-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; margin-bottom: 8px;
+    }
+    .result-score { font-size: 4rem; font-weight: 600; color: var(--accent); line-height: 1; }
+    .result-total { font-size: 1rem; color: var(--muted); margin-bottom: 32px; }
+    .result-msg { color: var(--muted); font-size: 0.95rem; margin-bottom: 32px; }
+    .btn-retry {
+      padding: 16px 40px; border-radius: var(--radius);
+      background: var(--accent2); color: #fff;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-retry:hover { background: #f08050; transform: translateY(-2px); }
+
+    /* ── Quiz select ── */
+    #quiz-screen { display: none; }
+    #quiz-screen.show { display: block; }
+    #start-screen { display: block; }
+    #start-screen.hide { display: none; }
+
+    .start-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 40px 32px; text-align: center;
+    }
+    .start-card h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 12px; }
+    .start-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+
+    .level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .level-btn {
+      background: var(--surface); border: 1.5px solid var(--border);
+      color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 500; padding: 16px;
+      border-radius: 12px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .level-btn:hover, .level-btn.selected {
+      border-color: var(--accent); background: #2a2a36;
+    }
+    .level-btn .lv-tag {
+      display: block; font-size: 0.7rem; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+    }
+
+    .btn-start {
+      width: 100%; padding: 18px; border-radius: var(--radius);
+      background: var(--accent); color: #0f0f13;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-start:hover { background: #f7d060; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="logo">Word<span>Quiz</span></div>
+    <p>英単語を楽しく覚えよう</p>
+  </header>
+
+  <!-- ── START SCREEN ── -->
+  <div id="start-screen">
+    <div class="start-card">
+      <h2>レベルを選んでスタート</h2>
+      <p>4択クイズ形式で英単語の意味を確認しよう。</p>
+      <div class="level-grid">
+        <button class="level-btn selected" data-level="basic" onclick="selectLevel(this)">
+          <span class="lv-tag">Level 1</span>基礎 (CEFR A1)
+        </button>
+        <button class="level-btn" data-level="elementary" onclick="selectLevel(this)">
+          <span class="lv-tag">Level 2</span>初級 (CEFR A2)
+        </button>
+        <button class="level-btn" data-level="intermediate" onclick="selectLevel(this)">
+          <span class="lv-tag">Level 3</span>中級 (CEFR B1)
+        </button>
+        <button class="level-btn" data-level="advanced" onclick="selectLevel(this)">
+          <span class="lv-tag">Level 4</span>上級 (CEFR B2)
+        </button>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">クイズをはじめる →</button>
+    </div>
+  </div>
+
+  <!-- ── QUIZ SCREEN ── -->
+  <div id="quiz-screen">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="q-counter">問題 1 / 10</span>
+        <span id="score-info">正解 0</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="card" id="question-card">
+      <div class="question-label">次の英単語の意味は？</div>
+      <div class="question-word" id="q-word">apple</div>
+      <div class="question-hint" id="q-hint">品詞: 名詞</div>
+    </div>
+
+    <div class="options" id="options-grid"></div>
+
+    <div class="feedback" id="feedback">
+      <strong id="fb-title"></strong>
+      <span id="fb-detail"></span>
+    </div>
+
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">次の問題へ →</button>
+  </div>
+
+  <!-- ── RESULT SCREEN ── -->
+  <div id="result-screen">
+    <div class="result-card">
+      <div class="result-emoji" id="result-emoji">🎉</div>
+      <div class="result-title">クイズ完了！</div>
+      <div class="result-score" id="result-score">8</div>
+      <div class="result-total" id="result-total">/ 10 問正解</div>
+      <div class="result-msg" id="result-msg">素晴らしい！</div>
+      <button class="btn-retry" onclick="retryQuiz()">もう一度チャレンジ</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+//  Word banks
+// ──────────────────────────────────────────────
+const wordBanks = {
+  basic: [
+    { word:"apple",    pos:"名詞", meaning:"りんご",    wrong:["みかん","ぶどう","バナナ"] },
+    { word:"dog",      pos:"名詞", meaning:"犬",        wrong:["猫","馬","魚"] },
+    { word:"happy",    pos:"形容詞", meaning:"幸せな",  wrong:["悲しい","怒った","眠い"] },
+    { word:"run",      pos:"動詞", meaning:"走る",      wrong:["飛ぶ","泳ぐ","歩く"] },
+    { word:"big",      pos:"形容詞", meaning:"大きい",  wrong:["小さい","重い","速い"] },
+    { word:"water",    pos:"名詞", meaning:"水",        wrong:["火","土","空気"] },
+    { word:"eat",      pos:"動詞", meaning:"食べる",    wrong:["飲む","寝る","読む"] },
+    { word:"house",    pos:"名詞", meaning:"家",        wrong:["学校","公園","店"] },
+    { word:"red",      pos:"形容詞", meaning:"赤い",    wrong:["青い","黄色い","緑の"] },
+    { word:"friend",   pos:"名詞", meaning:"友達",      wrong:["先生","家族","敵"] },
+    { word:"cold",     pos:"形容詞", meaning:"冷たい",  wrong:["熱い","暖かい","柔らかい"] },
+    { word:"book",     pos:"名詞", meaning:"本",        wrong:["ノート","筆","消しゴム"] },
+  ],
+  elementary: [
+    { word:"brave",    pos:"形容詞", meaning:"勇敢な",  wrong:["臆病な","穏やかな","冷静な"] },
+    { word:"quiet",    pos:"形容詞", meaning:"静かな",  wrong:["うるさい","賑やかな","明るい"] },
+    { word:"journey",  pos:"名詞", meaning:"旅",        wrong:["冒険","帰宅","仕事"] },
+    { word:"laugh",    pos:"動詞", meaning:"笑う",      wrong:["泣く","叫ぶ","歌う"] },
+    { word:"ocean",    pos:"名詞", meaning:"海",        wrong:["山","川","湖"] },
+    { word:"sharp",    pos:"形容詞", meaning:"鋭い",    wrong:["鈍い","柔らかい","丸い"] },
+    { word:"choose",   pos:"動詞", meaning:"選ぶ",      wrong:["捨てる","集める","渡す"] },
+    { word:"village",  pos:"名詞", meaning:"村",        wrong:["城","都市","港"] },
+    { word:"useful",   pos:"形容詞", meaning:"便利な",  wrong:["危険な","不要な","古い"] },
+    { word:"proud",    pos:"形容詞", meaning:"誇りに思う",wrong:["恥ずかしい","不満な","心配な"] },
+    { word:"follow",   pos:"動詞", meaning:"従う",      wrong:["逃げる","攻める","拒む"] },
+    { word:"strange",  pos:"形容詞", meaning:"奇妙な",  wrong:["普通の","美しい","明確な"] },
+  ],
+  intermediate: [
+    { word:"ambiguous",  pos:"形容詞", meaning:"曖昧な",      wrong:["明確な","複雑な","重要な"] },
+    { word:"diligent",   pos:"形容詞", meaning:"勤勉な",      wrong:["怠惰な","慎重な","大胆な"] },
+    { word:"conceal",    pos:"動詞",   meaning:"隠す",        wrong:["暴く","探す","記録する"] },
+    { word:"prominent",  pos:"形容詞", meaning:"著名な",      wrong:["無名の","地味な","平凡な"] },
+    { word:"persist",    pos:"動詞",   meaning:"持続する",    wrong:["諦める","変化する","消える"] },
+    { word:"vivid",      pos:"形容詞", meaning:"鮮やかな",    wrong:["暗い","薄い","古びた"] },
+    { word:"obstacle",   pos:"名詞",   meaning:"障害",        wrong:["目標","近道","援助"] },
+    { word:"retrieve",   pos:"動詞",   meaning:"取り戻す",    wrong:["失う","壊す","預ける"] },
+    { word:"enormous",   pos:"形容詞", meaning:"巨大な",      wrong:["微小な","細長い","薄い"] },
+    { word:"criticize",  pos:"動詞",   meaning:"批判する",    wrong:["称賛する","無視する","支援する"] },
+    { word:"urgent",     pos:"形容詞", meaning:"緊急の",      wrong:["余裕のある","不要な","延期可能な"] },
+    { word:"genuine",    pos:"形容詞", meaning:"本物の",      wrong:["偽物の","不確かな","複製の"] },
+  ],
+  advanced: [
+    { word:"ephemeral",   pos:"形容詞", meaning:"はかない",        wrong:["永続的な","頑丈な","象徴的な"] },
+    { word:"pragmatic",   pos:"形容詞", meaning:"実用的な",        wrong:["理想主義的な","感情的な","独断的な"] },
+    { word:"eloquent",    pos:"形容詞", meaning:"雄弁な",          wrong:["無口な","口ごもった","退屈な"] },
+    { word:"mitigate",    pos:"動詞",   meaning:"和らげる",        wrong:["悪化させる","無視する","強調する"] },
+    { word:"paradox",     pos:"名詞",   meaning:"逆説",            wrong:["定理","比喩","証拠"] },
+    { word:"tenacious",   pos:"形容詞", meaning:"粘り強い",        wrong:["優柔不断な","無気力な","衝動的な"] },
+    { word:"relinquish",  pos:"動詞",   meaning:"放棄する",        wrong:["獲得する","強化する","維持する"] },
+    { word:"scrutinize",  pos:"動詞",   meaning:"詳しく調べる",    wrong:["見逃す","推測する","比較する"] },
+    { word:"affluent",    pos:"形容詞", meaning:"裕福な",          wrong:["貧しい","平均的な","節約家の"] },
+    { word:"plausible",   pos:"形容詞", meaning:"もっともらしい",  wrong:["あり得ない","滑稽な","複雑な"] },
+    { word:"vindicate",   pos:"動詞",   meaning:"正当性を証明する",wrong:["非難する","疑う","無効にする"] },
+    { word:"obsolete",    pos:"形容詞", meaning:"時代遅れの",      wrong:["革新的な","最新の","流行の"] },
+  ]
+};
+
+// ──────────────────────────────────────────────
+//  State
+// ──────────────────────────────────────────────
+let currentLevel = 'basic';
+let questions = [];
+let qIndex = 0;
+let score = 0;
+const TOTAL = 10;
+
+function selectLevel(btn) {
+  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentLevel = btn.dataset.level;
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function startQuiz() {
+  const pool = shuffle(wordBanks[currentLevel]).slice(0, TOTAL);
+  questions = pool;
+  qIndex = 0; score = 0;
+  document.getElementById('start-screen').classList.add('hide');
+  document.getElementById('quiz-screen').classList.add('show');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[qIndex];
+  document.getElementById('q-word').textContent = q.word;
+  document.getElementById('q-hint').textContent = '品詞: ' + q.pos;
+  document.getElementById('q-counter').textContent = `問題 ${qIndex + 1} / ${TOTAL}`;
+  document.getElementById('score-info').textContent = `正解 ${score}`;
+  document.getElementById('progress-fill').style.width = (qIndex / TOTAL * 100) + '%';
+
+  // reset feedback / button
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  document.getElementById('btn-next').classList.remove('show');
+
+  // build options
+  const opts = shuffle([q.meaning, ...q.wrong]);
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => chooseAnswer(btn, opt, q);
+    grid.appendChild(btn);
+  });
+
+  // re-animate card
+  const card = document.getElementById('question-card');
+  card.style.animation = 'none';
+  card.offsetHeight; // reflow
+  card.style.animation = '';
+}
+
+function chooseAnswer(btn, chosen, q) {
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const isCorrect = chosen === q.meaning;
+  const fb = document.getElementById('feedback');
+
+  if (isCorrect) {
+    score++;
+    btn.classList.add('correct');
+    fb.className = 'feedback correct-fb show';
+    document.getElementById('fb-title').textContent = '✓ 正解！';
+    document.getElementById('fb-detail').textContent = `"${q.word}" は「${q.meaning}」という意味です。`;
+  } else {
+    btn.classList.add('wrong');
+    // highlight correct
+    document.querySelectorAll('.option-btn').forEach(b => {
+      if (b.textContent === q.meaning) b.classList.add('correct');
+    });
+    fb.className = 'feedback wrong-fb show';
+    document.getElementById('fb-title').textContent = '✗ 不正解…';
+    document.getElementById('fb-detail').textContent = `正解は「${q.meaning}」でした。`;
+  }
+  document.getElementById('score-info').textContent = `正解 ${score}`;
+  document.getElementById('btn-next').classList.add('show');
+  document.getElementById('btn-next').textContent = qIndex + 1 < TOTAL ? '次の問題へ →' : '結果を見る →';
+}
+
+function nextQuestion() {
+  qIndex++;
+  if (qIndex >= TOTAL) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-screen').classList.remove('show');
+  const rs = document.getElementById('result-screen');
+  rs.classList.add('show');
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('result-total').textContent = `/ ${TOTAL} 問正解`;
+
+  let emoji, msg;
+  const pct = score / TOTAL;
+  if (pct === 1)       { emoji = '🏆'; msg = '完璧！全問正解です！'; }
+  else if (pct >= 0.8) { emoji = '🎉'; msg = '素晴らしい結果です！'; }
+  else if (pct >= 0.6) { emoji = '👍'; msg = 'なかなか良い調子！'; }
+  else if (pct >= 0.4) { emoji = '📚'; msg = '復習してまた挑戦しよう。'; }
+  else                  { emoji = '💪'; msg = '諦めずに練習しよう！'; }
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-msg').textContent = msg;
+}
+
+function retryQuiz() {
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('quiz-screen').classList.remove('show');
+  document.getElementById('start-screen').classList.remove('hide');
+}
+</script>
+</body>
+</html>
