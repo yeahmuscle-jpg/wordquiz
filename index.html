@@ -33,7 +33,6 @@
       padding: 32px 16px 64px;
     }
 
-    /* noise texture overlay */
     body::before {
       content: '';
       position: fixed;
@@ -45,7 +44,6 @@
 
     .wrapper { position: relative; z-index: 1; width: 100%; max-width: 560px; }
 
-    /* ── Header ── */
     header { text-align: center; margin-bottom: 40px; }
     header .logo {
       font-family: 'Playfair Display', serif;
@@ -56,28 +54,14 @@
     header .logo span { color: var(--accent2); }
     header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
 
-    /* ── Progress bar ── */
     .progress-wrap { margin-bottom: 24px; }
     .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
-    .progress-track {
-      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
-    }
+    .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
     .progress-fill {
       height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
       border-radius: 99px; transition: width 0.5s ease;
     }
 
-    /* ── Score badge ── */
-    .score-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 99px; padding: 6px 16px;
-      font-size: 0.85rem; color: var(--muted);
-      margin-bottom: 20px;
-    }
-    .score-badge strong { color: var(--accent); font-size: 1rem; }
-
-    /* ── Question card ── */
     .card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 40px 32px 32px;
@@ -92,30 +76,49 @@
       font-size: 3rem; color: var(--text);
       line-height: 1.1; margin-bottom: 12px;
     }
-    .question-hint { font-size: 0.85rem; color: var(--muted); margin-bottom: 0; }
+    .question-hint { font-size: 0.85rem; color: var(--muted); }
 
-    /* ── Options grid ── */
-    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .input-wrap { margin-bottom: 12px; }
+    .answer-input {
+      width: 100%;
+      padding: 18px 20px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .answer-input::placeholder { color: var(--muted); }
+    .answer-input:focus { border-color: var(--accent); }
+    .answer-input.correct { border-color: var(--correct); background: #1a3029; color: var(--correct); }
+    .answer-input.wrong   { border-color: var(--wrong);   background: #2e1a1a; color: var(--wrong); }
 
-    .option-btn {
-      background: var(--surface); border: 1.5px solid var(--border);
-      color: var(--text); font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem; padding: 18px 16px; border-radius: 12px;
-      cursor: pointer; text-align: center; line-height: 1.4;
-      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    .hint-toggle {
+      background: none; border: none; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+      cursor: pointer; padding: 0; margin-bottom: 14px;
+      text-decoration: underline; display: block;
     }
-    .option-btn:hover:not(:disabled) {
-      border-color: var(--accent); background: #2a2a36; transform: translateY(-2px);
+    .hint-toggle:hover { color: var(--text); }
+    .first-char-hint {
+      font-size: 0.85rem; color: var(--accent);
+      margin-bottom: 14px; display: none;
     }
-    .option-btn.correct {
-      border-color: var(--correct); background: #1a3029; color: var(--correct);
-    }
-    .option-btn.wrong {
-      border-color: var(--wrong); background: #2e1a1a; color: var(--wrong);
-    }
-    .option-btn:disabled { cursor: default; }
+    .first-char-hint.show { display: block; }
 
-    /* ── Feedback ── */
+    .btn-answer {
+      width: 100%; padding: 18px; border-radius: var(--radius);
+      background: var(--accent); color: #0f0f13;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+      border: none; cursor: pointer; margin-bottom: 16px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-answer:hover { background: #f7d060; transform: translateY(-2px); }
+    .btn-answer:disabled { opacity: 0.4; cursor: default; transform: none; }
+
     .feedback {
       border-radius: var(--radius); padding: 16px 20px;
       font-size: 0.9rem; margin-bottom: 20px;
@@ -127,7 +130,6 @@
     .feedback strong { display: block; margin-bottom: 4px; font-size: 1rem; }
     .feedback span { color: var(--muted); font-size: 0.85rem; }
 
-    /* ── Next button ── */
     .btn-next {
       width: 100%; padding: 18px; border-radius: var(--radius);
       background: var(--accent); color: #0f0f13;
@@ -138,21 +140,14 @@
     .btn-next.show { display: block; animation: slideIn 0.25s ease; }
     .btn-next:hover { background: #f7d060; transform: translateY(-2px); }
 
-    /* ── Result screen ── */
-    #result-screen {
-      display: none; text-align: center;
-      animation: slideIn 0.4s cubic-bezier(.22,1,.36,1);
-    }
+    #result-screen { display: none; text-align: center; animation: slideIn 0.4s cubic-bezier(.22,1,.36,1); }
     #result-screen.show { display: block; }
     .result-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 48px 32px;
     }
     .result-emoji { font-size: 4rem; margin-bottom: 16px; }
-    .result-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem; margin-bottom: 8px;
-    }
+    .result-title { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 8px; }
     .result-score { font-size: 4rem; font-weight: 600; color: var(--accent); line-height: 1; }
     .result-total { font-size: 1rem; color: var(--muted); margin-bottom: 32px; }
     .result-msg { color: var(--muted); font-size: 0.95rem; margin-bottom: 32px; }
@@ -165,7 +160,6 @@
     }
     .btn-retry:hover { background: #f08050; transform: translateY(-2px); }
 
-    /* ── Quiz select ── */
     #quiz-screen { display: none; }
     #quiz-screen.show { display: block; }
     #start-screen { display: block; }
@@ -186,14 +180,11 @@
       border-radius: 12px; cursor: pointer;
       transition: border-color 0.15s, background 0.15s;
     }
-    .level-btn:hover, .level-btn.selected {
-      border-color: var(--accent); background: #2a2a36;
-    }
+    .level-btn:hover, .level-btn.selected { border-color: var(--accent); background: #2a2a36; }
     .level-btn .lv-tag {
       display: block; font-size: 0.7rem; color: var(--accent);
       text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
     }
-
     .btn-start {
       width: 100%; padding: 18px; border-radius: var(--radius);
       background: var(--accent); color: #0f0f13;
@@ -212,11 +203,11 @@
     <p>英単語を楽しく覚えよう</p>
   </header>
 
-  <!-- ── START SCREEN ── -->
+  <!-- START -->
   <div id="start-screen">
     <div class="start-card">
       <h2>レベルを選んでスタート</h2>
-      <p>4択クイズ形式で英単語の意味を確認しよう。</p>
+      <p>英単語の日本語訳を入力するクイズです。<br>Enterキーでも回答・次の問題に進めます。</p>
       <div class="level-grid">
         <button class="level-btn selected" data-level="basic" onclick="selectLevel(this)">
           <span class="lv-tag">Level 1</span>基礎 (CEFR A1)
@@ -235,7 +226,7 @@
     </div>
   </div>
 
-  <!-- ── QUIZ SCREEN ── -->
+  <!-- QUIZ -->
   <div id="quiz-screen">
     <div class="progress-wrap">
       <div class="progress-info">
@@ -246,12 +237,21 @@
     </div>
 
     <div class="card" id="question-card">
-      <div class="question-label">次の英単語の意味は？</div>
+      <div class="question-label">日本語訳を入力してください</div>
       <div class="question-word" id="q-word">apple</div>
       <div class="question-hint" id="q-hint">品詞: 名詞</div>
     </div>
 
-    <div class="options" id="options-grid"></div>
+    <div class="input-wrap">
+      <input type="text" class="answer-input" id="answer-input"
+        placeholder="日本語で入力…" autocomplete="off"
+        onkeydown="handleKey(event)" />
+    </div>
+
+    <button class="hint-toggle" onclick="showHint()">💡 ヒントを見る</button>
+    <div class="first-char-hint" id="first-char-hint"></div>
+
+    <button class="btn-answer" id="btn-answer" onclick="checkAnswer()">答え合わせ →</button>
 
     <div class="feedback" id="feedback">
       <strong id="fb-title"></strong>
@@ -261,7 +261,7 @@
     <button class="btn-next" id="btn-next" onclick="nextQuestion()">次の問題へ →</button>
   </div>
 
-  <!-- ── RESULT SCREEN ── -->
+  <!-- RESULT -->
   <div id="result-screen">
     <div class="result-card">
       <div class="result-emoji" id="result-emoji">🎉</div>
@@ -274,77 +274,67 @@
   </div>
 
 </div>
-
 <script>
-// ──────────────────────────────────────────────
-//  Word banks
-// ──────────────────────────────────────────────
 const wordBanks = {
   basic: [
-    { word:"apple",    pos:"名詞", meaning:"りんご",    wrong:["みかん","ぶどう","バナナ"] },
-    { word:"dog",      pos:"名詞", meaning:"犬",        wrong:["猫","馬","魚"] },
-    { word:"happy",    pos:"形容詞", meaning:"幸せな",  wrong:["悲しい","怒った","眠い"] },
-    { word:"run",      pos:"動詞", meaning:"走る",      wrong:["飛ぶ","泳ぐ","歩く"] },
-    { word:"big",      pos:"形容詞", meaning:"大きい",  wrong:["小さい","重い","速い"] },
-    { word:"water",    pos:"名詞", meaning:"水",        wrong:["火","土","空気"] },
-    { word:"eat",      pos:"動詞", meaning:"食べる",    wrong:["飲む","寝る","読む"] },
-    { word:"house",    pos:"名詞", meaning:"家",        wrong:["学校","公園","店"] },
-    { word:"red",      pos:"形容詞", meaning:"赤い",    wrong:["青い","黄色い","緑の"] },
-    { word:"friend",   pos:"名詞", meaning:"友達",      wrong:["先生","家族","敵"] },
-    { word:"cold",     pos:"形容詞", meaning:"冷たい",  wrong:["熱い","暖かい","柔らかい"] },
-    { word:"book",     pos:"名詞", meaning:"本",        wrong:["ノート","筆","消しゴム"] },
+    { word:"apple",   pos:"名詞",   meanings:["りんご","リンゴ"] },
+    { word:"dog",     pos:"名詞",   meanings:["犬","いぬ"] },
+    { word:"happy",   pos:"形容詞", meanings:["幸せ","幸せな","うれしい","嬉しい"] },
+    { word:"run",     pos:"動詞",   meanings:["走る","はしる"] },
+    { word:"big",     pos:"形容詞", meanings:["大きい","おおきい","大きな"] },
+    { word:"water",   pos:"名詞",   meanings:["水","みず"] },
+    { word:"eat",     pos:"動詞",   meanings:["食べる","たべる"] },
+    { word:"house",   pos:"名詞",   meanings:["家","いえ","うち"] },
+    { word:"red",     pos:"形容詞", meanings:["赤","赤い","あかい"] },
+    { word:"friend",  pos:"名詞",   meanings:["友達","友だち","ともだち","友人"] },
+    { word:"cold",    pos:"形容詞", meanings:["冷たい","つめたい","寒い","さむい"] },
+    { word:"book",    pos:"名詞",   meanings:["本","ほん"] },
   ],
   elementary: [
-    { word:"brave",    pos:"形容詞", meaning:"勇敢な",  wrong:["臆病な","穏やかな","冷静な"] },
-    { word:"quiet",    pos:"形容詞", meaning:"静かな",  wrong:["うるさい","賑やかな","明るい"] },
-    { word:"journey",  pos:"名詞", meaning:"旅",        wrong:["冒険","帰宅","仕事"] },
-    { word:"laugh",    pos:"動詞", meaning:"笑う",      wrong:["泣く","叫ぶ","歌う"] },
-    { word:"ocean",    pos:"名詞", meaning:"海",        wrong:["山","川","湖"] },
-    { word:"sharp",    pos:"形容詞", meaning:"鋭い",    wrong:["鈍い","柔らかい","丸い"] },
-    { word:"choose",   pos:"動詞", meaning:"選ぶ",      wrong:["捨てる","集める","渡す"] },
-    { word:"village",  pos:"名詞", meaning:"村",        wrong:["城","都市","港"] },
-    { word:"useful",   pos:"形容詞", meaning:"便利な",  wrong:["危険な","不要な","古い"] },
-    { word:"proud",    pos:"形容詞", meaning:"誇りに思う",wrong:["恥ずかしい","不満な","心配な"] },
-    { word:"follow",   pos:"動詞", meaning:"従う",      wrong:["逃げる","攻める","拒む"] },
-    { word:"strange",  pos:"形容詞", meaning:"奇妙な",  wrong:["普通の","美しい","明確な"] },
+    { word:"brave",   pos:"形容詞", meanings:["勇敢","勇敢な","ゆうかんな","勇気がある"] },
+    { word:"quiet",   pos:"形容詞", meanings:["静か","静かな","しずかな"] },
+    { word:"journey", pos:"名詞",   meanings:["旅","たび","旅行"] },
+    { word:"laugh",   pos:"動詞",   meanings:["笑う","わらう"] },
+    { word:"ocean",   pos:"名詞",   meanings:["海","うみ","大海","大洋"] },
+    { word:"sharp",   pos:"形容詞", meanings:["鋭い","するどい","尖った"] },
+    { word:"choose",  pos:"動詞",   meanings:["選ぶ","えらぶ","選択する"] },
+    { word:"village", pos:"名詞",   meanings:["村","むら"] },
+    { word:"useful",  pos:"形容詞", meanings:["便利","便利な","役立つ","有用な"] },
+    { word:"proud",   pos:"形容詞", meanings:["誇り","誇りに思う","誇らしい"] },
+    { word:"follow",  pos:"動詞",   meanings:["従う","したがう","ついていく"] },
+    { word:"strange", pos:"形容詞", meanings:["奇妙","奇妙な","不思議な","変な"] },
   ],
   intermediate: [
-    { word:"ambiguous",  pos:"形容詞", meaning:"曖昧な",      wrong:["明確な","複雑な","重要な"] },
-    { word:"diligent",   pos:"形容詞", meaning:"勤勉な",      wrong:["怠惰な","慎重な","大胆な"] },
-    { word:"conceal",    pos:"動詞",   meaning:"隠す",        wrong:["暴く","探す","記録する"] },
-    { word:"prominent",  pos:"形容詞", meaning:"著名な",      wrong:["無名の","地味な","平凡な"] },
-    { word:"persist",    pos:"動詞",   meaning:"持続する",    wrong:["諦める","変化する","消える"] },
-    { word:"vivid",      pos:"形容詞", meaning:"鮮やかな",    wrong:["暗い","薄い","古びた"] },
-    { word:"obstacle",   pos:"名詞",   meaning:"障害",        wrong:["目標","近道","援助"] },
-    { word:"retrieve",   pos:"動詞",   meaning:"取り戻す",    wrong:["失う","壊す","預ける"] },
-    { word:"enormous",   pos:"形容詞", meaning:"巨大な",      wrong:["微小な","細長い","薄い"] },
-    { word:"criticize",  pos:"動詞",   meaning:"批判する",    wrong:["称賛する","無視する","支援する"] },
-    { word:"urgent",     pos:"形容詞", meaning:"緊急の",      wrong:["余裕のある","不要な","延期可能な"] },
-    { word:"genuine",    pos:"形容詞", meaning:"本物の",      wrong:["偽物の","不確かな","複製の"] },
+    { word:"ambiguous",  pos:"形容詞", meanings:["曖昧","曖昧な","あいまいな"] },
+    { word:"diligent",   pos:"形容詞", meanings:["勤勉","勤勉な","まじめな","真面目な"] },
+    { word:"conceal",    pos:"動詞",   meanings:["隠す","かくす","隠蔽する"] },
+    { word:"prominent",  pos:"形容詞", meanings:["著名","著名な","目立つ","有名な"] },
+    { word:"persist",    pos:"動詞",   meanings:["持続する","続く","粘る","継続する"] },
+    { word:"vivid",      pos:"形容詞", meanings:["鮮やか","鮮やかな","あざやかな","生き生きした"] },
+    { word:"obstacle",   pos:"名詞",   meanings:["障害","障壁","妨げ","邪魔"] },
+    { word:"retrieve",   pos:"動詞",   meanings:["取り戻す","回収する","取得する"] },
+    { word:"enormous",   pos:"形容詞", meanings:["巨大","巨大な","膨大な","莫大な"] },
+    { word:"criticize",  pos:"動詞",   meanings:["批判する","非難する","批評する"] },
+    { word:"urgent",     pos:"形容詞", meanings:["緊急","緊急の","急を要する"] },
+    { word:"genuine",    pos:"形容詞", meanings:["本物","本物の","真の","真実の"] },
   ],
   advanced: [
-    { word:"ephemeral",   pos:"形容詞", meaning:"はかない",        wrong:["永続的な","頑丈な","象徴的な"] },
-    { word:"pragmatic",   pos:"形容詞", meaning:"実用的な",        wrong:["理想主義的な","感情的な","独断的な"] },
-    { word:"eloquent",    pos:"形容詞", meaning:"雄弁な",          wrong:["無口な","口ごもった","退屈な"] },
-    { word:"mitigate",    pos:"動詞",   meaning:"和らげる",        wrong:["悪化させる","無視する","強調する"] },
-    { word:"paradox",     pos:"名詞",   meaning:"逆説",            wrong:["定理","比喩","証拠"] },
-    { word:"tenacious",   pos:"形容詞", meaning:"粘り強い",        wrong:["優柔不断な","無気力な","衝動的な"] },
-    { word:"relinquish",  pos:"動詞",   meaning:"放棄する",        wrong:["獲得する","強化する","維持する"] },
-    { word:"scrutinize",  pos:"動詞",   meaning:"詳しく調べる",    wrong:["見逃す","推測する","比較する"] },
-    { word:"affluent",    pos:"形容詞", meaning:"裕福な",          wrong:["貧しい","平均的な","節約家の"] },
-    { word:"plausible",   pos:"形容詞", meaning:"もっともらしい",  wrong:["あり得ない","滑稽な","複雑な"] },
-    { word:"vindicate",   pos:"動詞",   meaning:"正当性を証明する",wrong:["非難する","疑う","無効にする"] },
-    { word:"obsolete",    pos:"形容詞", meaning:"時代遅れの",      wrong:["革新的な","最新の","流行の"] },
+    { word:"ephemeral",  pos:"形容詞", meanings:["はかない","短命な","一時的な","儚い"] },
+    { word:"pragmatic",  pos:"形容詞", meanings:["実用的","実用的な","現実的な","実践的な"] },
+    { word:"eloquent",   pos:"形容詞", meanings:["雄弁","雄弁な","説得力がある"] },
+    { word:"mitigate",   pos:"動詞",   meanings:["和らげる","軽減する","緩和する"] },
+    { word:"paradox",    pos:"名詞",   meanings:["逆説","パラドックス","矛盾"] },
+    { word:"tenacious",  pos:"形容詞", meanings:["粘り強い","頑固な","しつこい","執拗な"] },
+    { word:"relinquish", pos:"動詞",   meanings:["放棄する","手放す","諦める","断念する"] },
+    { word:"scrutinize", pos:"動詞",   meanings:["詳しく調べる","精査する","吟味する"] },
+    { word:"affluent",   pos:"形容詞", meanings:["裕福","裕福な","豊かな","富裕な"] },
+    { word:"plausible",  pos:"形容詞", meanings:["もっともらしい","ありそうな","信憑性のある"] },
+    { word:"vindicate",  pos:"動詞",   meanings:["正当性を証明する","無実を証明する","弁護する"] },
+    { word:"obsolete",   pos:"形容詞", meanings:["時代遅れ","時代遅れの","廃れた","旧式の"] },
   ]
 };
 
-// ──────────────────────────────────────────────
-//  State
-// ──────────────────────────────────────────────
-let currentLevel = 'basic';
-let questions = [];
-let qIndex = 0;
-let score = 0;
+let currentLevel = 'basic', questions = [], qIndex = 0, score = 0;
 const TOTAL = 10;
 
 function selectLevel(btn) {
@@ -352,12 +342,10 @@ function selectLevel(btn) {
   btn.classList.add('selected');
   currentLevel = btn.dataset.level;
 }
-
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 function startQuiz() {
-  const pool = shuffle(wordBanks[currentLevel]).slice(0, TOTAL);
-  questions = pool;
+  questions = shuffle(wordBanks[currentLevel]).slice(0, TOTAL);
   qIndex = 0; score = 0;
   document.getElementById('start-screen').classList.add('hide');
   document.getElementById('quiz-screen').classList.add('show');
@@ -372,79 +360,82 @@ function renderQuestion() {
   document.getElementById('score-info').textContent = `正解 ${score}`;
   document.getElementById('progress-fill').style.width = (qIndex / TOTAL * 100) + '%';
 
-  // reset feedback / button
-  const fb = document.getElementById('feedback');
-  fb.className = 'feedback';
+  const input = document.getElementById('answer-input');
+  input.value = ''; input.className = 'answer-input'; input.disabled = false;
+  setTimeout(() => input.focus(), 100);
+
+  document.getElementById('feedback').className = 'feedback';
   document.getElementById('btn-next').classList.remove('show');
+  document.getElementById('btn-answer').disabled = false;
+  document.getElementById('first-char-hint').className = 'first-char-hint';
 
-  // build options
-  const opts = shuffle([q.meaning, ...q.wrong]);
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  opts.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.textContent = opt;
-    btn.onclick = () => chooseAnswer(btn, opt, q);
-    grid.appendChild(btn);
-  });
-
-  // re-animate card
   const card = document.getElementById('question-card');
-  card.style.animation = 'none';
-  card.offsetHeight; // reflow
-  card.style.animation = '';
+  card.style.animation = 'none'; card.offsetHeight; card.style.animation = '';
 }
 
-function chooseAnswer(btn, chosen, q) {
-  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-  const isCorrect = chosen === q.meaning;
+function handleKey(e) {
+  if (e.key !== 'Enter') return;
+  if (!document.getElementById('btn-answer').disabled) checkAnswer();
+  else nextQuestion();
+}
+
+function showHint() {
+  const hint = document.getElementById('first-char-hint');
+  hint.textContent = `ヒント：最初の文字は「${questions[qIndex].meanings[0][0]}」`;
+  hint.classList.add('show');
+}
+
+function normalize(s) {
+  return s.trim()
+    .replace(/[ぁ-ん]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60))
+    .toLowerCase();
+}
+
+function checkAnswer() {
+  const q = questions[qIndex];
+  const input = document.getElementById('answer-input');
+  const userAns = normalize(input.value);
+  if (!userAns) return;
+
+  input.disabled = true;
+  document.getElementById('btn-answer').disabled = true;
+  const isCorrect = q.meanings.some(m => normalize(m) === userAns);
   const fb = document.getElementById('feedback');
 
   if (isCorrect) {
     score++;
-    btn.classList.add('correct');
+    input.classList.add('correct');
     fb.className = 'feedback correct-fb show';
     document.getElementById('fb-title').textContent = '✓ 正解！';
-    document.getElementById('fb-detail').textContent = `"${q.word}" は「${q.meaning}」という意味です。`;
+    document.getElementById('fb-detail').textContent = `"${q.word}" は「${q.meanings[0]}」という意味です。`;
   } else {
-    btn.classList.add('wrong');
-    // highlight correct
-    document.querySelectorAll('.option-btn').forEach(b => {
-      if (b.textContent === q.meaning) b.classList.add('correct');
-    });
+    input.classList.add('wrong');
     fb.className = 'feedback wrong-fb show';
     document.getElementById('fb-title').textContent = '✗ 不正解…';
-    document.getElementById('fb-detail').textContent = `正解は「${q.meaning}」でした。`;
+    document.getElementById('fb-detail').textContent = `正解は「${q.meanings[0]}」でした。`;
   }
+
   document.getElementById('score-info').textContent = `正解 ${score}`;
-  document.getElementById('btn-next').classList.add('show');
-  document.getElementById('btn-next').textContent = qIndex + 1 < TOTAL ? '次の問題へ →' : '結果を見る →';
+  const btnNext = document.getElementById('btn-next');
+  btnNext.classList.add('show');
+  btnNext.textContent = qIndex + 1 < TOTAL ? '次の問題へ →' : '結果を見る →';
 }
 
 function nextQuestion() {
-  qIndex++;
-  if (qIndex >= TOTAL) {
-    showResult();
-  } else {
-    renderQuestion();
-  }
+  if (++qIndex >= TOTAL) showResult(); else renderQuestion();
 }
 
 function showResult() {
   document.getElementById('quiz-screen').classList.remove('show');
-  const rs = document.getElementById('result-screen');
-  rs.classList.add('show');
+  document.getElementById('result-screen').classList.add('show');
   document.getElementById('result-score').textContent = score;
   document.getElementById('result-total').textContent = `/ ${TOTAL} 問正解`;
-
-  let emoji, msg;
   const pct = score / TOTAL;
-  if (pct === 1)       { emoji = '🏆'; msg = '完璧！全問正解です！'; }
-  else if (pct >= 0.8) { emoji = '🎉'; msg = '素晴らしい結果です！'; }
-  else if (pct >= 0.6) { emoji = '👍'; msg = 'なかなか良い調子！'; }
-  else if (pct >= 0.4) { emoji = '📚'; msg = '復習してまた挑戦しよう。'; }
-  else                  { emoji = '💪'; msg = '諦めずに練習しよう！'; }
+  const [emoji, msg] = pct === 1 ? ['🏆','完璧！全問正解です！']
+    : pct >= 0.8 ? ['🎉','素晴らしい結果です！']
+    : pct >= 0.6 ? ['👍','なかなか良い調子！']
+    : pct >= 0.4 ? ['📚','復習してまた挑戦しよう。']
+    : ['💪','諦めずに練習しよう！'];
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('result-msg').textContent = msg;
 }
